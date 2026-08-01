@@ -307,8 +307,8 @@ async function deleteType(typeId, typeName) {
 }
 
 const COLOR_PALETTE = [
-  "#FD5003", "#E63946", "#2A9D8F", "#457B9D", "#F4A300", "#8E44AD",
-  "#06D6A0", "#EF476F", "#118AB2", "#FFD166", "#C77DFF", "#3A86FF",
+  "#E63946", "#2A9D8F", "#457B9D", "#8E44AD", "#06D6A0", "#EF476F",
+  "#118AB2", "#C77DFF", "#3A86FF", "#43AA8B", "#F72585", "#4CC9F0",
 ];
 
 function nextAvailableColor() {
