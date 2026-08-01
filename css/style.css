@@ -269,3 +269,36 @@ body {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   max-width: 608px; width: calc(100% - 32px); z-index: 40;
 }
+
+/* ============================================================
+   Responsive — Tablet & Desktop
+   ============================================================ */
+@media (min-width: 768px) {
+  .app-shell { max-width: 720px; padding: 28px 24px 110px; }
+  .ticket { padding: 34px 30px 26px; }
+  .balance-amount { font-size: 52px; }
+  .login-card { max-width: 420px; padding: 44px 34px; }
+}
+
+@media (min-width: 1024px) {
+  body {
+    display: flex; align-items: flex-start; justify-content: center;
+  }
+  .app-shell { max-width: 860px; padding: 40px 32px 60px; }
+  .fab { max-width: 828px; }
+
+  /* الشيتس تبقى نافذة في النص بدل إنها لاصقة تحت */
+  .sheet-backdrop { align-items: center; }
+  .sheet {
+    border-radius: 22px; max-width: 480px; border-bottom: 1px solid var(--border);
+    transform: translateY(10px) scale(.98);
+  }
+  .sheet-backdrop.open .sheet { transform: translateY(0) scale(1); }
+
+  .driver-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+}
+
+@media (min-width: 1280px) {
+  .app-shell { max-width: 980px; }
+}
+
