@@ -73,18 +73,17 @@
     </div>
 
     <div class="section-title"><span>إضافة مندوب جديد</span></div>
-    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px; font-size:13px; color:var(--text-dim); margin-bottom:14px; line-height:1.9;">
-      1) روح Supabase Dashboard → Authentication → Add User، وحط إيميل بالشكل ده: <span class="mono" style="color:var(--text)">username@altayar-ledger.local</span> وكلمة سر<br>
-      2) انسخ الـ User UID اللي هيظهر بعد الإنشاء<br>
-      3) الصقه هنا تحت مع بيانات المندوب
-    </div>
-    <div class="field">
-      <label>User UID (من Supabase)</label>
-      <input type="text" id="newDriverUid" placeholder="00000000-0000-0000-0000-000000000000">
-    </div>
     <div class="field">
       <label>اسم المندوب</label>
       <input type="text" id="newDriverName">
+    </div>
+    <div class="field">
+      <label>الإيميل</label>
+      <input type="email" id="newDriverEmail" placeholder="mohamed@altayar-ledger.local">
+    </div>
+    <div class="field">
+      <label>كلمة السر (6 حروف/أرقام على الأقل)</label>
+      <input type="text" id="newDriverPassword">
     </div>
     <div class="field">
       <label>رقم التليفون (اختياري)</label>

@@ -245,12 +245,13 @@ document.getElementById("addTypeBtn").addEventListener("click", async () => {
 // Add driver
 // ---------------------------------------------------------
 document.getElementById("addDriverBtn").addEventListener("click", async () => {
-  const uid = document.getElementById("newDriverUid").value.trim();
   const name = document.getElementById("newDriverName").value.trim();
+  const email = document.getElementById("newDriverEmail").value.trim();
+  const password = document.getElementById("newDriverPassword").value;
   const phone = document.getElementById("newDriverPhone").value.trim();
 
-  if (!uid || !name) {
-    showToast("لازم تدخل الـ UID والاسم", "error");
+  if (!name || !email || !password) {
+    showToast("لازم تدخل الاسم والإيميل والباسورد", "error");
     return;
   }
 
@@ -258,23 +259,21 @@ document.getElementById("addDriverBtn").addEventListener("click", async () => {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>';
 
-  const { error } = await supabaseClient.from("profiles").insert({
-    id: uid,
-    full_name: name,
-    phone: phone || null,
-    role: "driver",
+  const { data, error } = await supabaseClient.functions.invoke("create-driver", {
+    body: { email, password, full_name: name, phone: phone || null },
   });
 
   btn.disabled = false;
   btn.textContent = "إضافة المندوب";
 
-  if (error) {
-    showToast("حصل خطأ — تأكد إن الـ UID صح ومكرّرش قبل كده", "error");
+  if (error || (data && data.error)) {
+    showToast((data && data.error) || "حصل خطأ، حاول تاني", "error");
     return;
   }
 
-  document.getElementById("newDriverUid").value = "";
   document.getElementById("newDriverName").value = "";
+  document.getElementById("newDriverEmail").value = "";
+  document.getElementById("newDriverPassword").value = "";
   document.getElementById("newDriverPhone").value = "";
   showToast("تمت إضافة المندوب ✓");
   await loadDrivers();
