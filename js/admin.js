@@ -50,7 +50,50 @@ async function loadDrivers() {
 
   drivers = profiles || [];
   renderDrivers();
+  renderManageDrivers();
   renderStats();
+}
+
+function renderManageDrivers() {
+  const wrap = document.getElementById("manageDriversList");
+  if (!wrap) return;
+  if (!drivers.length) {
+    wrap.innerHTML = `<div style="color:var(--text-faint); font-size:13px;">لسه مفيش مناديب</div>`;
+    return;
+  }
+  wrap.innerHTML = drivers.map((d) => `
+    <div style="display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:8px;">
+      <div>
+        <div style="font-weight:700; font-size:14px;">${escapeHtml(d.full_name)}</div>
+        <div style="color:var(--text-faint); font-size:12px; margin-top:2px;">${d.phone || "بدون رقم"}</div>
+      </div>
+      <button class="btn btn-debit btn-sm" onclick="confirmDeleteDriver('${d.id}', '${escapeHtml(d.full_name).replace(/'/g, "\\'")}')">حذف</button>
+    </div>
+  `).join("");
+}
+
+async function confirmDeleteDriver(driverId, driverName) {
+  const sure = window.confirm(`متأكد إنك عايز تحذف "${driverName}"؟\nهيتمسح حسابه وكل سجل حركاته وطلبات التسوية بتاعته نهائيًا، مفيش رجوع.`);
+  if (!sure) return;
+
+  const { data, error } = await supabaseClient.functions.invoke("delete-driver", {
+    body: { driver_id: driverId },
+  });
+
+  if (error || (data && data.error)) {
+    let msg = data && data.error ? data.error : "حصل خطأ، حاول تاني";
+    if (error && error.context && typeof error.context.json === "function") {
+      try {
+        const body = await error.context.json();
+        if (body && body.error) msg = body.error;
+      } catch (_) { /* تجاهل */ }
+    }
+    showToast(msg, "error");
+    return;
+  }
+
+  showToast("تم حذف المندوب ✓");
+  await loadDrivers();
 }
 
 function renderStats() {
