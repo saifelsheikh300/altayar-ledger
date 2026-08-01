@@ -226,7 +226,7 @@ async function submitTransaction() {
 
   const btn = document.getElementById("submitTxBtn");
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>';
+  btn.innerHTML = '<span class="dots-loader"><span></span><span></span><span></span><span></span></span>';
 
   const { error } = await supabaseClient.from("transactions").insert({
     driver_id: selectedDriverId,
@@ -355,7 +355,7 @@ document.getElementById("addDriverBtn").addEventListener("click", async () => {
 
   const btn = document.getElementById("addDriverBtn");
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>';
+  btn.innerHTML = '<span class="dots-loader"><span></span><span></span><span></span><span></span></span>';
 
   const { data, error } = await supabaseClient.functions.invoke("create-driver", {
     body: { email, password, full_name: name, phone: phone || null },

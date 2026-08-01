@@ -122,7 +122,7 @@ document.getElementById("submitSettleBtn").addEventListener("click", async () =>
   }
   const btn = document.getElementById("submitSettleBtn");
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>';
+  btn.innerHTML = '<span class="dots-loader"><span></span><span></span><span></span><span></span></span>';
 
   const { error } = await supabaseClient.from("settlement_requests").insert({
     driver_id: currentProfile.id,
