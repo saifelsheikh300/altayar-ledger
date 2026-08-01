@@ -306,11 +306,30 @@ async function deleteType(typeId, typeName) {
   await loadTypes();
 }
 
+const COLOR_PALETTE = [
+  "#FD5003", "#E63946", "#2A9D8F", "#457B9D", "#F4A300", "#8E44AD",
+  "#06D6A0", "#EF476F", "#118AB2", "#FFD166", "#C77DFF", "#3A86FF",
+];
+
+function nextAvailableColor() {
+  const used = new Set(txTypes.map((t) => (t.color || "").toLowerCase()));
+  const free = COLOR_PALETTE.find((c) => !used.has(c.toLowerCase()));
+  if (free) return free;
+  // كل الألوان الجاهزة اتاخدت، نولّد لون عشوائي مختلف بوضوح عن الموجود
+  let color, tries = 0;
+  do {
+    const hue = Math.floor(Math.random() * 360);
+    color = `hsl(${hue}, 70%, 55%)`;
+    tries++;
+  } while (used.has(color.toLowerCase()) && tries < 20);
+  return color;
+}
+
 document.getElementById("addTypeBtn").addEventListener("click", async () => {
   const input = document.getElementById("newTypeName");
   const name = input.value.trim();
   if (!name) return;
-  const { error } = await supabaseClient.from("transaction_types").insert({ name });
+  const { error } = await supabaseClient.from("transaction_types").insert({ name, color: nextAvailableColor() });
   if (error) {
     showToast("النوع ده موجود بالفعل أو حصل خطأ", "error");
     return;
