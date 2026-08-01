@@ -260,14 +260,50 @@ async function loadTypes() {
 }
 
 function renderTypesUI() {
-  document.getElementById("typesList").innerHTML = txTypes.map((t) =>
-    `<span class="type-chip"><span style="width:8px;height:8px;border-radius:50%;background:${t.color || "var(--brand)"};display:inline-block;"></span>${escapeHtml(t.name)}</span>`
-  ).join("") || `<span style="color:var(--text-faint); font-size:13px;">مفيش أنواع لسه</span>`;
+  const listEl = document.getElementById("typesList");
+  listEl.innerHTML = txTypes.length ? txTypes.map((t) => `
+    <div style="display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:10px 12px; margin-bottom:8px;">
+      <span style="width:10px; height:10px; border-radius:50%; background:${t.color || "var(--brand)"}; flex-shrink:0;"></span>
+      <span style="flex:1; font-size:14px; font-weight:600;">${escapeHtml(t.name)}</span>
+      <button class="btn btn-ghost btn-sm" onclick="editType('${t.id}', '${escapeHtml(t.name).replace(/'/g, "\\'")}')">تعديل</button>
+      <button class="btn btn-debit btn-sm" onclick="deleteType('${t.id}', '${escapeHtml(t.name).replace(/'/g, "\\'")}')">حذف</button>
+    </div>
+  `).join("") : `<span style="color:var(--text-faint); font-size:13px;">مفيش أنواع لسه</span>`;
 
   const select = document.getElementById("txType");
   if (select) {
     select.innerHTML = txTypes.map((t) => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join("");
   }
+}
+
+async function editType(typeId, currentName) {
+  const newName = window.prompt("اسم النوع الجديد:", currentName);
+  if (!newName || !newName.trim() || newName.trim() === currentName) return;
+
+  const { error } = await supabaseClient
+    .from("transaction_types")
+    .update({ name: newName.trim() })
+    .eq("id", typeId);
+
+  if (error) {
+    showToast("حصل خطأ، ممكن يكون فيه نوع بنفس الاسم", "error");
+    return;
+  }
+  showToast("تم التعديل ✓");
+  await loadTypes();
+}
+
+async function deleteType(typeId, typeName) {
+  const sure = window.confirm(`متأكد إنك عايز تحذف نوع "${typeName}"؟\nالعمليات القديمة اللي مسجلة بالنوع ده هتفضل موجودة بس من غير تصنيف.`);
+  if (!sure) return;
+
+  const { error } = await supabaseClient.from("transaction_types").delete().eq("id", typeId);
+  if (error) {
+    showToast("حصل خطأ، حاول تاني", "error");
+    return;
+  }
+  showToast("تم حذف النوع ✓");
+  await loadTypes();
 }
 
 document.getElementById("addTypeBtn").addEventListener("click", async () => {
