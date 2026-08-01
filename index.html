@@ -8,7 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=El+Messiri:wght@600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="css/style.css?v=1785594638">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#fd5003">
+<link rel="stylesheet" href="css/style.css?v=1785609733">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -36,8 +38,8 @@
   </div>
 </div>
 
-<script src="js/supabaseClient.js?v=1785594638"></script>
-<script src="js/auth.js?v=1785594638"></script>
+<script src="js/supabaseClient.js?v=1785609733"></script>
+<script src="js/auth.js?v=1785609733"></script>
 <script>
 (async function () {
   // لو فيه جلسة شغالة أصلاً، حوّل على الصفحة الصح على طول
@@ -75,5 +77,6 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   }
 });
 </script>
+<script src="js/pwa.js"></script>
 </body>
 </html>

@@ -8,7 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=El+Messiri:wght@600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="css/style.css?v=1785594638">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#fd5003">
+<link rel="stylesheet" href="css/style.css?v=1785609733">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   .tabs { display:flex; gap:6px; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:5px; margin-bottom:18px; }
@@ -54,6 +56,9 @@
 
   <!-- تاب المناديب -->
   <div class="panel active" id="panel-drivers">
+    <div class="field" style="margin-bottom:14px;">
+      <input type="text" id="driverSearch" placeholder="🔍 دوّر باسم المندوب أو رقمه...">
+    </div>
     <div id="driversList">
       <div class="skel" style="height:70px; margin-bottom:10px;"></div>
       <div class="skel" style="height:70px;"></div>
@@ -110,6 +115,10 @@
       <span class="balance-unit">جنيه</span>
     </div>
     <button class="btn btn-brand" id="addTxBtn">+ إضافة عملية</button>
+    <button class="btn btn-ghost" id="printStatementBtn" style="margin-top:10px;">🖨️ طباعة / مشاركة الكشف</button>
+
+    <div class="section-title"><span>اتجاه آخر 14 يوم</span></div>
+    <div id="driverTrendChart" style="display:flex; align-items:flex-end; gap:4px; height:70px; padding:0 2px;"></div>
     <div class="section-title"><span>آخر الحركات</span></div>
     <div class="timeline" id="driverSheetTimeline"></div>
   </div>
@@ -119,7 +128,7 @@
 <div class="sheet-backdrop" id="txSheetBackdrop">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <h3>إضافة عملية</h3>
+    <h3 id="txSheetTitle">إضافة عملية</h3>
     <div class="field">
       <label>الاتجاه</label>
       <div class="segmented">
@@ -140,12 +149,14 @@
       <textarea id="txNote"></textarea>
     </div>
     <button class="btn btn-brand" id="submitTxBtn">حفظ العملية</button>
+    <button class="btn btn-debit" id="deleteTxBtn" style="display:none; margin-top:10px;">حذف العملية</button>
     <button class="btn btn-ghost" id="cancelTxBtn" style="margin-top:10px;">إلغاء</button>
   </div>
 </div>
 
-<script src="js/supabaseClient.js?v=1785594638"></script>
-<script src="js/auth.js?v=1785594638"></script>
-<script src="js/admin.js?v=1785594638"></script>
+<script src="js/supabaseClient.js?v=1785609733"></script>
+<script src="js/auth.js?v=1785609733"></script>
+<script src="js/admin.js?v=1785609733"></script>
+<script src="js/pwa.js"></script>
 </body>
 </html>

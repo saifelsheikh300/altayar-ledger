@@ -78,3 +78,62 @@ function animateNumber(el, target, duration = 800) {
   }
   requestAnimationFrame(tick);
 }
+
+// فتح نافذة كشف حساب قابلة للطباعة/الحفظ كـ PDF عن طريق طباعة المتصفح
+function openStatementPrint(driverName, balance, txs) {
+  const cls = balance > 0.009 ? "debit" : balance < -0.009 ? "credit" : "zero";
+  const label = cls === "debit" ? "عليه للأدمن" : cls === "credit" ? "له عند الأدمن" : "الحساب متزود";
+  const color = cls === "debit" ? "#e63946" : cls === "credit" ? "#2bb673" : "#666";
+
+  const rows = txs.map((t) => {
+    const isDebit = Number(t.amount) > 0;
+    const typeName = t.transaction_types ? t.transaction_types.name : "عملية";
+    return `<tr>
+      <td>${formatDate(t.created_at)}</td>
+      <td>${typeName}</td>
+      <td>${t.note ? t.note.replace(/</g, "&lt;") : "—"}</td>
+      <td style="color:${isDebit ? "#e63946" : "#2bb673"}; font-weight:700;">${isDebit ? "" : "-"}${formatMoney(Math.abs(t.amount))} ج</td>
+    </tr>`;
+  }).join("");
+
+  const html = `<!DOCTYPE html>
+  <html lang="ar" dir="rtl"><head><meta charset="UTF-8">
+  <title>كشف حساب - ${driverName}</title>
+  <style>
+    body { font-family: 'Tahoma', 'Arial', sans-serif; padding: 30px; color: #1a1a1a; }
+    .header { display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #fd5003; padding-bottom: 14px; margin-bottom: 20px; }
+    .header h1 { margin:0; font-size: 20px; color: #fd5003; }
+    .header .meta { text-align:left; font-size: 12px; color: #666; }
+    .summary { display:flex; justify-content:space-between; align-items:center; background:#f5f5f5; border-radius:10px; padding:16px 20px; margin-bottom:22px; }
+    .summary .name { font-size:16px; font-weight:700; }
+    .summary .bal { font-size: 24px; font-weight:800; color:${color}; }
+    .summary .bal-label { font-size:12px; color:#666; }
+    table { width:100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 9px 10px; text-align: right; border-bottom: 1px solid #e5e5e5; }
+    th { background:#fafafa; color:#666; font-size:12px; }
+    @media print { body { padding: 10px; } }
+  </style></head>
+  <body>
+    <div class="header">
+      <h1>حسابات الطيار</h1>
+      <div class="meta">اتطبع بتاريخ ${new Date().toLocaleDateString("ar-EG")}</div>
+    </div>
+    <div class="summary">
+      <div>
+        <div class="name">${driverName}</div>
+        <div class="bal-label">${label}</div>
+      </div>
+      <div class="bal">${formatMoney(Math.abs(balance))} ج</div>
+    </div>
+    <table>
+      <thead><tr><th>التاريخ</th><th>النوع</th><th>ملاحظة</th><th>المبلغ</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="4" style="text-align:center; color:#999;">مفيش حركات</td></tr>'}</tbody>
+    </table>
+  </body></html>`;
+
+  const win = window.open("", "_blank");
+  if (!win) { showToast("افتح نافذة جديدة مسموح بيها في المتصفح", "error"); return; }
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 350);
+}

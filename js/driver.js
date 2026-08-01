@@ -1,5 +1,6 @@
 let currentProfile = null;
 let currentBalance = 0;
+let currentTxs = [];
 
 async function init() {
   currentProfile = await guardPage("driver");
@@ -7,8 +8,42 @@ async function init() {
 
   document.getElementById("driverName").textContent = currentProfile.full_name;
 
+  await checkNotifications();
   await loadTransactions();
   await loadPendingSettlement();
+
+  document.getElementById("printStatementBtn").addEventListener("click", () => {
+    openStatementPrint(currentProfile.full_name, currentBalance, currentTxs);
+  });
+}
+
+async function checkNotifications() {
+  const lastSeen = currentProfile.last_seen_at || currentProfile.created_at;
+
+  const [{ data: newTxs }, { data: resolvedRequests }] = await Promise.all([
+    supabaseClient.from("transactions").select("id").eq("driver_id", currentProfile.id).gt("created_at", lastSeen),
+    supabaseClient.from("settlement_requests").select("id, status").eq("driver_id", currentProfile.id).neq("status", "pending").gt("resolved_at", lastSeen),
+  ]);
+
+  const newCount = (newTxs || []).length;
+  const approvedCount = (resolvedRequests || []).filter((r) => r.status === "approved").length;
+  const rejectedCount = (resolvedRequests || []).filter((r) => r.status === "rejected").length;
+
+  const banner = document.getElementById("notifyBanner");
+  const parts = [];
+  if (newCount) parts.push(`🔔 ${newCount} عملية جديدة اتسجلت على حسابك`);
+  if (approvedCount) parts.push(`✅ الأدمن وافق على طلب تسويتك`);
+  if (rejectedCount) parts.push(`⚠️ الأدمن رفض طلب تسويتك`);
+
+  if (parts.length) {
+    banner.style.display = "block";
+    banner.innerHTML = parts.join(" · ");
+  } else {
+    banner.style.display = "none";
+  }
+
+  // حدّث آخر ظهور بعد ما عرضنا التحديثات
+  await supabaseClient.from("profiles").update({ last_seen_at: new Date().toISOString() }).eq("id", currentProfile.id);
 }
 
 async function loadTransactions() {
@@ -24,6 +59,7 @@ async function loadTransactions() {
   }
 
   currentBalance = (txs || []).reduce((sum, t) => sum + Number(t.amount), 0);
+  currentTxs = txs || [];
   renderBalance(currentBalance);
   renderTimeline(txs || []);
 

@@ -3,6 +3,8 @@ let drivers = [];
 let txTypes = [];
 let balancesByDriver = {};
 let selectedDriverId = null;
+let currentDriverTxs = [];
+let editingTxId = null;
 let txDirection = "debit"; // debit = عليه (+), credit = له (-)
 
 async function init() {
@@ -13,6 +15,15 @@ async function init() {
   setupTabs();
   setupTxSheet();
   document.getElementById("logoutBtn").addEventListener("click", logoutUser);
+
+  const searchInput = document.getElementById("driverSearch");
+  if (searchInput) searchInput.addEventListener("input", renderDrivers);
+
+  document.getElementById("printStatementBtn").addEventListener("click", () => {
+    const driver = drivers.find((d) => d.id === selectedDriverId);
+    if (!driver) return;
+    openStatementPrint(driver.full_name, balancesByDriver[selectedDriverId] || 0, currentDriverTxs);
+  });
 }
 
 // ---------------------------------------------------------
@@ -62,14 +73,36 @@ function renderManageDrivers() {
     return;
   }
   wrap.innerHTML = drivers.map((d) => `
-    <div style="display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:8px;">
-      <div>
+    <div style="display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:8px; gap:10px;">
+      <div style="min-width:0;">
         <div style="font-weight:700; font-size:14px;">${escapeHtml(d.full_name)}</div>
         <div style="color:var(--text-faint); font-size:12px; margin-top:2px;">${d.phone || "بدون رقم"}</div>
       </div>
-      <button class="btn btn-debit btn-sm" onclick="confirmDeleteDriver('${d.id}', '${escapeHtml(d.full_name).replace(/'/g, "\\'")}')">حذف</button>
+      <div style="display:flex; gap:6px; flex-shrink:0;">
+        <button class="btn btn-ghost btn-sm" onclick="editDriver('${d.id}', '${escapeHtml(d.full_name).replace(/'/g, "\\'")}', '${d.phone ? d.phone.replace(/'/g, "\\'") : ""}')">تعديل</button>
+        <button class="btn btn-debit btn-sm" onclick="confirmDeleteDriver('${d.id}', '${escapeHtml(d.full_name).replace(/'/g, "\\'")}')">حذف</button>
+      </div>
     </div>
   `).join("");
+}
+
+async function editDriver(driverId, currentName, currentPhone) {
+  const newName = window.prompt("اسم المندوب:", currentName);
+  if (newName === null) return;
+  const newPhone = window.prompt("رقم التليفون (سيبه فاضي لو مفيش):", currentPhone || "");
+  if (newPhone === null) return;
+
+  const { error } = await supabaseClient
+    .from("profiles")
+    .update({ full_name: newName.trim() || currentName, phone: newPhone.trim() || null })
+    .eq("id", driverId);
+
+  if (error) {
+    showToast("حصل خطأ، حاول تاني", "error");
+    return;
+  }
+  showToast("تم تعديل بيانات المندوب ✓");
+  await loadDrivers();
 }
 
 async function confirmDeleteDriver(driverId, driverName) {
@@ -107,11 +140,24 @@ function renderStats() {
 
 function renderDrivers() {
   const wrap = document.getElementById("driversList");
+  const searchInput = document.getElementById("driverSearch");
+  const term = (searchInput && searchInput.value || "").trim().toLowerCase();
+
+  const filtered = term
+    ? drivers.filter((d) =>
+        d.full_name.toLowerCase().includes(term) || (d.phone || "").includes(term)
+      )
+    : drivers;
+
   if (!drivers.length) {
     wrap.innerHTML = `<div class="empty-state"><div class="emoji">🏍️</div>لسه مفيش مناديب مضافين<br>ضيفهم من تاب الإعدادات</div>`;
     return;
   }
-  wrap.innerHTML = drivers.map((d, i) => {
+  if (!filtered.length) {
+    wrap.innerHTML = `<div class="empty-state"><div class="emoji">🔍</div>مفيش نتايج تطابق البحث</div>`;
+    return;
+  }
+  wrap.innerHTML = filtered.map((d, i) => {
     const bal = balancesByDriver[d.id] || 0;
     const cls = bal > 0.009 ? "debit" : bal < -0.009 ? "credit" : "zero";
     const color = cls === "debit" ? "var(--debit)" : cls === "credit" ? "var(--credit)" : "var(--text-dim)";
@@ -157,9 +203,43 @@ async function openDriverSheet(driverId) {
     .limit(20);
 
   renderDriverTimeline(txs || []);
+  renderTrendChart(txs || []);
+}
+
+function renderTrendChart(txs) {
+  const el = document.getElementById("driverTrendChart");
+  if (!el) return;
+
+  const days = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    days.push({ date: d, net: 0 });
+  }
+
+  txs.forEach((t) => {
+    const d = new Date(t.created_at);
+    d.setHours(0, 0, 0, 0);
+    const match = days.find((day) => day.date.getTime() === d.getTime());
+    if (match) match.net += Number(t.amount);
+  });
+
+  const maxAbs = Math.max(1, ...days.map((d) => Math.abs(d.net)));
+
+  el.innerHTML = days.map((d) => {
+    const h = Math.max(3, Math.round((Math.abs(d.net) / maxAbs) * 60));
+    const color = d.net > 0.009 ? "var(--debit)" : d.net < -0.009 ? "var(--credit)" : "var(--border)";
+    const label = d.date.toLocaleDateString("ar-EG", { day: "numeric", month: "numeric" });
+    return `<div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;" title="${label}: ${formatMoney(d.net)}">
+      <div style="width:100%; max-width:14px; height:${h}px; background:${color}; border-radius:4px 4px 0 0;"></div>
+    </div>`;
+  }).join("");
 }
 
 function renderDriverTimeline(txs) {
+  currentDriverTxs = txs;
   const wrap = document.getElementById("driverSheetTimeline");
   if (!txs.length) {
     wrap.innerHTML = `<div class="empty-state"><div class="emoji">🧾</div>مفيش حركات لسه</div>`;
@@ -170,7 +250,7 @@ function renderDriverTimeline(txs) {
     const cls = isDebit ? "debit" : "credit";
     const typeName = t.transaction_types ? t.transaction_types.name : "عملية";
     return `
-      <div class="t-row">
+      <div class="t-row" style="cursor:pointer;" onclick="openEditTx('${t.id}')">
         <div class="t-dot ${cls}">${isDebit ? "↑" : "↓"}</div>
         <div class="t-body">
           <div class="t-top">
@@ -195,22 +275,42 @@ const txSheetBackdrop = document.getElementById("txSheetBackdrop");
 
 function setupTxSheet() {
   document.getElementById("addTxBtn").addEventListener("click", () => {
+    editingTxId = null;
+    document.getElementById("txSheetTitle").textContent = "إضافة عملية";
+    document.getElementById("deleteTxBtn").style.display = "none";
     document.getElementById("txAmount").value = "";
     document.getElementById("txNote").value = "";
+    setDirection("debit");
+    if (txTypes[0]) document.getElementById("txType").value = txTypes[0].id;
     txSheetBackdrop.classList.add("open");
   });
   document.getElementById("cancelTxBtn").addEventListener("click", () => txSheetBackdrop.classList.remove("open"));
   txSheetBackdrop.addEventListener("click", (e) => { if (e.target === txSheetBackdrop) txSheetBackdrop.classList.remove("open"); });
 
   document.querySelectorAll(".segmented .seg").forEach((seg) => {
-    seg.addEventListener("click", () => {
-      document.querySelectorAll(".segmented .seg").forEach((s) => s.classList.remove("active"));
-      seg.classList.add("active");
-      txDirection = seg.dataset.dir;
-    });
+    seg.addEventListener("click", () => setDirection(seg.dataset.dir));
   });
 
   document.getElementById("submitTxBtn").addEventListener("click", submitTransaction);
+  document.getElementById("deleteTxBtn").addEventListener("click", deleteTransaction);
+}
+
+function setDirection(dir) {
+  txDirection = dir;
+  document.querySelectorAll(".segmented .seg").forEach((s) => s.classList.toggle("active", s.dataset.dir === dir));
+}
+
+function openEditTx(txId) {
+  const tx = currentDriverTxs.find((t) => t.id === txId);
+  if (!tx) return;
+  editingTxId = txId;
+  document.getElementById("txSheetTitle").textContent = "تعديل العملية";
+  document.getElementById("deleteTxBtn").style.display = "block";
+  setDirection(Number(tx.amount) > 0 ? "debit" : "credit");
+  document.getElementById("txAmount").value = Math.abs(tx.amount);
+  document.getElementById("txNote").value = tx.note || "";
+  if (tx.type_id) document.getElementById("txType").value = tx.type_id;
+  txSheetBackdrop.classList.add("open");
 }
 
 async function submitTransaction() {
@@ -228,13 +328,21 @@ async function submitTransaction() {
   btn.disabled = true;
   btn.innerHTML = '<span class="dots-loader"><span></span><span></span><span></span><span></span></span>';
 
-  const { error } = await supabaseClient.from("transactions").insert({
-    driver_id: selectedDriverId,
-    type_id: typeId || null,
-    amount,
-    note: note || null,
-    created_by: adminProfile.id,
-  });
+  let error;
+  if (editingTxId) {
+    ({ error } = await supabaseClient
+      .from("transactions")
+      .update({ type_id: typeId || null, amount, note: note || null })
+      .eq("id", editingTxId));
+  } else {
+    ({ error } = await supabaseClient.from("transactions").insert({
+      driver_id: selectedDriverId,
+      type_id: typeId || null,
+      amount,
+      note: note || null,
+      created_by: adminProfile.id,
+    }));
+  }
 
   btn.disabled = false;
   btn.textContent = "حفظ العملية";
@@ -244,7 +352,23 @@ async function submitTransaction() {
     return;
   }
 
-  showToast("تمت إضافة العملية ✓");
+  showToast(editingTxId ? "تم تعديل العملية ✓" : "تمت إضافة العملية ✓");
+  txSheetBackdrop.classList.remove("open");
+  await loadDrivers();
+  await openDriverSheet(selectedDriverId);
+}
+
+async function deleteTransaction() {
+  if (!editingTxId) return;
+  const sure = window.confirm("متأكد إنك عايز تحذف العملية دي نهائيًا؟");
+  if (!sure) return;
+
+  const { error } = await supabaseClient.from("transactions").delete().eq("id", editingTxId);
+  if (error) {
+    showToast("حصل خطأ، حاول تاني", "error");
+    return;
+  }
+  showToast("تم حذف العملية ✓");
   txSheetBackdrop.classList.remove("open");
   await loadDrivers();
   await openDriverSheet(selectedDriverId);
