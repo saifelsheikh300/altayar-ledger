@@ -267,7 +267,14 @@ document.getElementById("addDriverBtn").addEventListener("click", async () => {
   btn.textContent = "إضافة المندوب";
 
   if (error || (data && data.error)) {
-    showToast((data && data.error) || "حصل خطأ، حاول تاني", "error");
+    let msg = data && data.error ? data.error : "حصل خطأ، حاول تاني";
+    if (error && error.context && typeof error.context.json === "function") {
+      try {
+        const body = await error.context.json();
+        if (body && body.error) msg = body.error;
+      } catch (_) { /* تجاهل لو مش JSON */ }
+    }
+    showToast(msg, "error");
     return;
   }
 
