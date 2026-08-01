@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>لوحة الأدمن | الطيار</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=El+Messiri:wght@600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  .tabs { display:flex; gap:6px; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:5px; margin-bottom:18px; }
+  .tab { flex:1; text-align:center; padding:10px; border-radius:10px; font-size:13.5px; font-weight:700; color:var(--text-dim); cursor:pointer; transition:all .2s ease; position:relative;}
+  .tab.active { background:var(--brand); color:#fff; }
+  .tab .badge-dot { position:absolute; top:2px; left:8px; width:8px; height:8px; border-radius:50%; background:var(--brand); }
+  .tab.active .badge-dot { background:#fff; }
+  .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px; }
+  .stat-card .lbl { color:var(--text-faint); font-size:12px; }
+  .stat-card .val { font-family:'IBM Plex Mono',monospace; font-size:20px; font-weight:700; margin-top:4px; }
+  .panel { display:none; }
+  .panel.active { display:block; animation: rise .35s ease both; }
+  .type-chip { display:inline-flex; align-items:center; gap:6px; background:var(--surface-2); border:1px solid var(--border); padding:6px 12px; border-radius:999px; font-size:12.5px; margin:0 6px 8px 0; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> لوحة الأدمن</div>
+    <button class="icon-btn" id="logoutBtn" title="خروج">⏻</button>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="lbl">إجمالي عليهم (ديون المناديب)</div>
+      <div class="val amount" id="statDebit" style="color:var(--debit)">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="lbl">إجمالي ليهم (مستحقات)</div>
+      <div class="val amount" id="statCredit" style="color:var(--credit)">0</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="drivers">المناديب</div>
+    <div class="tab" data-tab="requests">طلبات التسوية <span class="badge-dot" id="reqDot" style="display:none"></span></div>
+    <div class="tab" data-tab="settings">الإعدادات</div>
+  </div>
+
+  <!-- تاب المناديب -->
+  <div class="panel active" id="panel-drivers">
+    <div id="driversList">
+      <div class="skel" style="height:70px; margin-bottom:10px;"></div>
+      <div class="skel" style="height:70px;"></div>
+    </div>
+  </div>
+
+  <!-- تاب طلبات التسوية -->
+  <div class="panel" id="panel-requests">
+    <div id="requestsList">
+      <div class="empty-state"><div class="emoji">📭</div>مفيش طلبات تسوية دلوقتي</div>
+    </div>
+  </div>
+
+  <!-- تاب الإعدادات -->
+  <div class="panel" id="panel-settings">
+    <div class="section-title" style="margin-top:0;"><span>أنواع العمليات</span></div>
+    <div id="typesList"></div>
+    <div style="display:flex; gap:8px; margin-top:10px;">
+      <input type="text" id="newTypeName" placeholder="اسم نوع جديد" style="flex:1; background:var(--surface-2); border:1px solid var(--border); color:var(--text); border-radius:12px; padding:12px 14px; font-family:'Cairo',sans-serif;">
+      <button class="btn btn-brand btn-sm" id="addTypeBtn">إضافة</button>
+    </div>
+
+    <div class="section-title"><span>إضافة مندوب جديد</span></div>
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px; font-size:13px; color:var(--text-dim); margin-bottom:14px; line-height:1.9;">
+      1) روح Supabase Dashboard → Authentication → Add User، وحط إيميل بالشكل ده: <span class="mono" style="color:var(--text)">username@altayar-ledger.local</span> وكلمة سر<br>
+      2) انسخ الـ User UID اللي هيظهر بعد الإنشاء<br>
+      3) الصقه هنا تحت مع بيانات المندوب
+    </div>
+    <div class="field">
+      <label>User UID (من Supabase)</label>
+      <input type="text" id="newDriverUid" placeholder="00000000-0000-0000-0000-000000000000">
+    </div>
+    <div class="field">
+      <label>اسم المندوب</label>
+      <input type="text" id="newDriverName">
+    </div>
+    <div class="field">
+      <label>رقم التليفون (اختياري)</label>
+      <input type="text" id="newDriverPhone">
+    </div>
+    <button class="btn btn-brand" id="addDriverBtn">إضافة المندوب</button>
+  </div>
+</div>
+
+<!-- شيت تفاصيل المندوب -->
+<div class="sheet-backdrop" id="driverSheetBackdrop">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h3 id="driverSheetName">—</h3>
+    <div class="balance-row" style="margin-bottom:14px;">
+      <span class="balance-amount amount zero" id="driverSheetBalance" style="font-size:32px;">0</span>
+      <span class="balance-unit">جنيه</span>
+    </div>
+    <button class="btn btn-brand" id="addTxBtn">+ إضافة عملية</button>
+    <div class="section-title"><span>آخر الحركات</span></div>
+    <div class="timeline" id="driverSheetTimeline"></div>
+  </div>
+</div>
+
+<!-- شيت إضافة عملية -->
+<div class="sheet-backdrop" id="txSheetBackdrop">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h3>إضافة عملية</h3>
+    <div class="field">
+      <label>الاتجاه</label>
+      <div class="segmented">
+        <div class="seg debit active" data-dir="debit">عليه (مديون)</div>
+        <div class="seg credit" data-dir="credit">له (دائن)</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>النوع</label>
+      <select id="txType"></select>
+    </div>
+    <div class="field">
+      <label>المبلغ (جنيه)</label>
+      <input type="number" id="txAmount" step="0.01" min="0">
+    </div>
+    <div class="field">
+      <label>ملاحظة (اختياري)</label>
+      <textarea id="txNote"></textarea>
+    </div>
+    <button class="btn btn-brand" id="submitTxBtn">حفظ العملية</button>
+    <button class="btn btn-ghost" id="cancelTxBtn" style="margin-top:10px;">إلغاء</button>
+  </div>
+</div>
+
+<script src="js/supabaseClient.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>الطيار | تسجيل الدخول</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=El+Messiri:wght@600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">🏍️</div>
+    <div class="login-title">حسابات الطيار</div>
+    <div class="login-sub">سجّل دخولك عشان تكمل</div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label>اسم المستخدم</label>
+        <input type="text" id="username" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label>كلمة السر</label>
+        <input type="password" id="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-brand" id="loginBtn">
+        <span id="loginBtnText">دخول</span>
+      </button>
+      <div class="error-text" id="errorText"></div>
+    </form>
+  </div>
+</div>
+
+<script src="js/supabaseClient.js"></script>
+<script src="js/auth.js"></script>
+<script>
+(async function () {
+  // لو فيه جلسة شغالة أصلاً، حوّل على الصفحة الصح على طول
+  const profile = await getCurrentProfile();
+  if (profile) {
+    window.location.href = profile.role === "admin" ? "admin.html" : "driver.html";
+  }
+})();
+
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  const btn = document.getElementById("loginBtn");
+  const btnText = document.getElementById("loginBtnText");
+  const errorText = document.getElementById("errorText");
+  errorText.textContent = "";
+  btn.disabled = true;
+  btnText.innerHTML = '<span class="spinner"></span>';
+
+  try {
+    await loginUser(username, password);
+    const profile = await getCurrentProfile();
+    if (!profile) {
+      errorText.textContent = "الحساب ده مش متفعّل بشكل صحيح، كلّم الأدمن.";
+      btn.disabled = false;
+      btnText.textContent = "دخول";
+      return;
+    }
+    window.location.href = profile.role === "admin" ? "admin.html" : "driver.html";
+  } catch (err) {
+    errorText.textContent = "اسم المستخدم أو كلمة السر غلط";
+    btn.disabled = false;
+    btnText.textContent = "دخول";
+  }
+});
+</script>
+</body>
+</html>
