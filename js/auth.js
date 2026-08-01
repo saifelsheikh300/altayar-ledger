@@ -1,7 +1,8 @@
 // دوال مشتركة للمصادقة والتوجيه حسب الدور
 
-async function loginUser(username, password) {
-  const email = usernameToEmail(username);
+async function loginUser(usernameOrEmail, password) {
+  // لو اللي اتكتب فيه @ يبقى إيميل حقيقي، غير كده يتحول لإيميل وهمي داخلي
+  const email = usernameOrEmail.includes("@") ? usernameOrEmail.trim().toLowerCase() : usernameToEmail(usernameOrEmail);
   const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
   if (error) throw error;
   return data;
