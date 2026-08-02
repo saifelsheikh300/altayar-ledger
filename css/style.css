@@ -189,6 +189,17 @@ body {
   outline: none; transition: border-color .2s ease;
 }
 .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--brand); }
+
+/* منع كروم إنه يغيّر لون الحقول لما يعمل تعبئة تلقائية (Autofill) */
+.field input:-webkit-autofill,
+.field input:-webkit-autofill:hover,
+.field input:-webkit-autofill:focus,
+.field input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-2) inset !important;
+  -webkit-text-fill-color: var(--text) !important;
+  caret-color: var(--text);
+  transition: background-color 9999s ease-in-out 0s;
+}
 .field textarea { resize: vertical; min-height: 70px; }
 
 .segmented { display: flex; gap: 8px; }
