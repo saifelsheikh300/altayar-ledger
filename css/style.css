@@ -331,5 +331,8 @@ body {
   .login-card { max-width: 440px; padding: 46px 38px; }
   .login-logo { width: 64px; height: 64px; font-size: 30px; }
   .login-title { font-size: 24px; }
+  .login-card .field label { font-size: 14px; }
+  .login-card .field input { padding: 16px 18px; font-size: 16px; border-radius: 14px; }
+  .login-card .btn { padding: 16px 20px; font-size: 16px; }
 }
 
