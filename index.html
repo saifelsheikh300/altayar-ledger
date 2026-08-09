@@ -10,34 +10,32 @@
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#fd5003">
-<link rel="stylesheet" href="css/style.css?v=1786313412">
+<link rel="stylesheet" href="css/style.css?v=1786313632">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<div class="login-wrap">
+<div class="login-wrap" id="loginScreen">
+  <div class="login-orb o1"></div>
+  <div class="login-orb o2"></div>
   <div class="login-card">
     <div class="login-logo">🏍️</div>
-    <div class="login-title">حسابات الطيار</div>
-    <div class="login-sub">سجّل دخولك عشان تكمل</div>
+    <h1>حسابات الطيار</h1>
+    <p>سجّل دخولك عشان تكمل</p>
 
     <form id="loginForm">
-      <div class="field field-lg">
-        <input type="email" id="username" autocomplete="username" placeholder="الإيميل" required>
-      </div>
-      <div class="field field-lg">
-        <input type="password" id="password" autocomplete="current-password" placeholder="كلمة السر" required>
-      </div>
-      <button type="submit" class="btn btn-brand" id="loginBtn">
+      <input type="email" id="username" autocomplete="username" placeholder="الإيميل" required>
+      <input type="password" id="password" autocomplete="current-password" placeholder="كلمة السر" required>
+      <button type="submit" class="btn-primary-full" id="loginBtn">
         <span id="loginBtnText">دخول</span>
       </button>
-      <div class="error-text" id="errorText"></div>
+      <div class="login-error" id="errorText"></div>
     </form>
   </div>
 </div>
 
-<script src="js/supabaseClient.js?v=1786313412"></script>
-<script src="js/auth.js?v=1786313412"></script>
+<script src="js/supabaseClient.js?v=1786313632"></script>
+<script src="js/auth.js?v=1786313632"></script>
 <script>
 (async function () {
   // لو فيه جلسة شغالة أصلاً، حوّل على الصفحة الصح على طول
