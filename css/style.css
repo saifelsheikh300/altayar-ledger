@@ -327,14 +327,14 @@ body {
   .app-shell { max-width: 980px; }
 }
 
-/* ---------- Login split-screen (desktop) ---------- */
+/* ---------- Login split-screen (desktop only, not tablet) ---------- */
 .login-brand-panel { display: none; }
 
-@media (min-width: 900px) {
+@media (min-width: 1100px) {
   .login-wrap { padding: 0; align-items: stretch; display: flex; min-height: 100vh; }
   .login-brand-panel {
     display: flex; align-items: center; justify-content: center;
-    flex: 1.1; position: relative; overflow: hidden;
+    flex: 1; position: relative; overflow: hidden;
     background:
       radial-gradient(circle at 20% 20%, rgba(253,80,3,.35), transparent 45%),
       radial-gradient(circle at 80% 75%, rgba(43,182,115,.18), transparent 40%),
@@ -347,30 +347,22 @@ body {
     background-size: 26px 26px;
     mask-image: radial-gradient(circle at 30% 30%, black, transparent 70%);
   }
-  .login-brand-inner { position: relative; z-index: 1; max-width: 420px; padding: 40px; text-align: center; }
+  .login-brand-inner { position: relative; z-index: 1; text-align: center; }
   .login-brand-logo {
-    width: 74px; height: 74px; border-radius: 20px; margin: 0 auto 24px;
+    width: 84px; height: 84px; border-radius: 22px; margin: 0 auto 20px;
     background: linear-gradient(145deg, var(--brand), #c73f00);
-    display: flex; align-items: center; justify-content: center; font-size: 34px;
+    display: flex; align-items: center; justify-content: center; font-size: 38px;
     box-shadow: 0 16px 40px var(--brand-glow); animation: pulse 2.6s ease-in-out infinite;
   }
-  .login-brand-inner h1 { font-family: 'El Messiri', serif; font-size: 30px; margin: 0 0 12px; }
-  .login-brand-inner p { color: var(--text-dim); font-size: 14.5px; line-height: 1.9; margin: 0 0 28px; }
-  .login-brand-stats { display: flex; flex-direction: column; gap: 12px; text-align: right; }
-  .login-brand-stats div {
-    display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--text-dim);
-    background: rgba(255,255,255,.03); border: 1px solid var(--border); border-radius: 12px; padding: 11px 14px;
-  }
-  .login-brand-stats span { font-size: 16px; }
+  .login-brand-inner h1 { font-family: 'El Messiri', serif; font-size: 32px; margin: 0; }
 
   .login-card {
     flex: 1; display: flex; flex-direction: column; justify-content: center;
-    max-width: 420px; margin: 0 auto; border: none; border-radius: 0; box-shadow: none;
+    max-width: 400px; margin: 0 auto; border: none; border-radius: 0; box-shadow: none;
     background: transparent; animation: rise .5s cubic-bezier(.22,1,.36,1) both;
   }
-}
-
-@media (min-width: 1280px) {
-  .login-brand-inner { max-width: 480px; }
+  /* اللوجو والاسم ظاهرين في البانل الجانبي، فمفيش داعي يتكرروا في الفورم */
+  .login-card .login-logo, .login-card .login-title { display: none; }
+  .login-card .login-sub { margin-bottom: 30px; }
 }
 
