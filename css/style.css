@@ -194,7 +194,11 @@ body {
 .field input:-webkit-autofill,
 .field input:-webkit-autofill:hover,
 .field input:-webkit-autofill:focus,
-.field input:-webkit-autofill:active {
+.field input:-webkit-autofill:active,
+.field-lg input:-webkit-autofill,
+.field-lg input:-webkit-autofill:hover,
+.field-lg input:-webkit-autofill:focus,
+.field-lg input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 1000px var(--surface-2) inset !important;
   -webkit-text-fill-color: var(--text) !important;
   caret-color: var(--text);
@@ -251,18 +255,29 @@ body {
   min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
 }
 .login-card {
-  width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--border);
-  border-radius: 24px; padding: 36px 26px; box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 28px; padding: 40px 30px; box-shadow: var(--shadow-lg);
   animation: rise .6s cubic-bezier(.22,1,.36,1) both;
 }
 .login-logo {
-  width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(145deg, var(--brand), #c73f00);
-  display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 18px;
+  width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(145deg, var(--brand), #c73f00);
+  display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 18px;
   box-shadow: 0 10px 30px var(--brand-glow); animation: pulse 2.4s ease-in-out infinite;
 }
-.login-title { text-align: center; font-family: 'El Messiri', serif; font-size: 22px; margin-bottom: 4px; }
-.login-sub { text-align: center; color: var(--text-dim); font-size: 13.5px; margin-bottom: 26px; }
+.login-title { text-align: center; font-family: 'El Messiri', serif; font-size: 24px; margin-bottom: 4px; }
+.login-sub { text-align: center; color: var(--text-dim); font-size: 13.5px; margin-bottom: 30px; }
 .error-text { color: var(--debit); font-size: 13px; margin-top: 10px; text-align: center; min-height: 16px; }
+
+/* حقول تسجيل الدخول الكبيرة (زي شكل نظام الحسابات التاني) */
+.field-lg { margin-bottom: 16px; }
+.field-lg input {
+  width: 100%; text-align: center; background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+  border-radius: 16px; padding: 18px 20px; font-family: 'Cairo', sans-serif; font-size: 16px;
+  outline: none; transition: border-color .2s ease;
+}
+.field-lg input:focus { border-color: var(--brand); }
+.field-lg input::placeholder { color: var(--text-faint); }
+.login-card .btn { border-radius: 16px; padding: 17px 20px; font-size: 16px; margin-top: 6px; }
 
 /* ---------- Skeleton loading ---------- */
 .skel { background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 37%, var(--surface-2) 63%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; border-radius: 10px; }
@@ -328,11 +343,10 @@ body {
 
 /* ---------- Login (tablet & desktop): نفس الكارت البسيط بس أكبر شوية ---------- */
 @media (min-width: 768px) {
-  .login-card { max-width: 440px; padding: 46px 38px; }
-  .login-logo { width: 64px; height: 64px; font-size: 30px; }
-  .login-title { font-size: 24px; }
-  .login-card .field label { font-size: 14px; }
-  .login-card .field input { padding: 16px 18px; font-size: 16px; border-radius: 14px; }
-  .login-card .btn { padding: 16px 20px; font-size: 16px; }
+  .login-card { max-width: 460px; padding: 50px 42px; }
+  .login-logo { width: 72px; height: 72px; font-size: 34px; }
+  .login-title { font-size: 26px; }
+  .field-lg input { padding: 19px 20px; font-size: 17px; }
+  .login-card .btn { padding: 18px 20px; font-size: 17px; }
 }
 

@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#fd5003">
-<link rel="stylesheet" href="css/style.css?v=1786313269">
+<link rel="stylesheet" href="css/style.css?v=1786313412">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -22,13 +22,11 @@
     <div class="login-sub">سجّل دخولك عشان تكمل</div>
 
     <form id="loginForm">
-      <div class="field">
-        <label>الإيميل</label>
-        <input type="email" id="username" autocomplete="username" required>
+      <div class="field field-lg">
+        <input type="email" id="username" autocomplete="username" placeholder="الإيميل" required>
       </div>
-      <div class="field">
-        <label>كلمة السر</label>
-        <input type="password" id="password" autocomplete="current-password" required>
+      <div class="field field-lg">
+        <input type="password" id="password" autocomplete="current-password" placeholder="كلمة السر" required>
       </div>
       <button type="submit" class="btn btn-brand" id="loginBtn">
         <span id="loginBtnText">دخول</span>
@@ -38,8 +36,8 @@
   </div>
 </div>
 
-<script src="js/supabaseClient.js?v=1786313269"></script>
-<script src="js/auth.js?v=1786313269"></script>
+<script src="js/supabaseClient.js?v=1786313412"></script>
+<script src="js/auth.js?v=1786313412"></script>
 <script>
 (async function () {
   // لو فيه جلسة شغالة أصلاً، حوّل على الصفحة الصح على طول
