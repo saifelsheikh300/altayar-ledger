@@ -42,15 +42,23 @@ Deno.serve(async (req) => {
     }
 
     const { email, password, full_name, phone } = await req.json();
-    if (!email || !password || !full_name) {
-      throw new Error("بيانات ناقصة: الإيميل والباسورد والاسم مطلوبين");
+    if (!full_name || !password) {
+      throw new Error("بيانات ناقصة: الاسم والباسورد مطلوبين");
+    }
+    if (!email && !phone) {
+      throw new Error("لازم تدخل رقم تليفون أو إيميل على الأقل");
     }
     if (password.length < 6) {
       throw new Error("الباسورد لازم يكون 6 حروف/أرقام على الأقل");
     }
 
+    // لو مفيش إيميل، نولّد واحد داخلي من رقم التليفون (المندوب مش هيحتاج يعرفه، هيدخل برقمه بس)
+    const finalEmail = email
+      ? email.trim().toLowerCase()
+      : `${phone.replace(/\D/g, "")}@altayar-ledger.local`;
+
     const { data: newUser, error: createErr } = await adminClient.auth.admin.createUser({
-      email: email.trim().toLowerCase(),
+      email: finalEmail,
       password,
       email_confirm: true,
     });

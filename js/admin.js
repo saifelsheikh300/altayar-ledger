@@ -472,8 +472,8 @@ document.getElementById("addDriverBtn").addEventListener("click", async () => {
   const password = document.getElementById("newDriverPassword").value;
   const phone = document.getElementById("newDriverPhone").value.trim();
 
-  if (!name || !email || !password) {
-    showToast("لازم تدخل الاسم والإيميل والباسورد", "error");
+  if (!name || !password || (!email && !phone)) {
+    showToast("لازم تدخل الاسم والباسورد ورقم التليفون (أو الإيميل)", "error");
     return;
   }
 
@@ -482,7 +482,7 @@ document.getElementById("addDriverBtn").addEventListener("click", async () => {
   btn.innerHTML = '<span class="dots-loader"><span></span><span></span><span></span><span></span></span>';
 
   const { data, error } = await supabaseClient.functions.invoke("create-driver", {
-    body: { email, password, full_name: name, phone: phone || null },
+    body: { email: email || null, password, full_name: name, phone: phone || null },
   });
 
   btn.disabled = false;
