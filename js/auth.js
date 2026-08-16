@@ -1,6 +1,17 @@
 // دوال مشتركة للمصادقة والتوجيه حسب الدور
 
-async function loginUser(email, password) {
+async function loginUser(identifier, password) {
+  let email = identifier.trim();
+
+  if (!email.includes("@")) {
+    // اعتبره رقم تليفون ودور على الإيميل المرتبط بيه
+    const { data: resolvedEmail, error: lookupErr } = await supabaseClient.rpc("email_for_phone", { p_phone: email });
+    if (lookupErr || !resolvedEmail) {
+      throw new Error("مفيش حساب مسجل بالرقم ده");
+    }
+    email = resolvedEmail;
+  }
+
   const { data, error } = await supabaseClient.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
   if (error) throw error;
   return data;
